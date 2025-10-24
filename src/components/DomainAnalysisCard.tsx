@@ -10,9 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 interface DomainAnalysisCardProps {
   onResults: (result: any) => void;
   onMetascraperResults: (result: any) => void;
+  onVirusTotalResults: (result: any) => void;
 }
 
-const DomainAnalysisCard = ({ onResults, onMetascraperResults }: DomainAnalysisCardProps) => {
+const DomainAnalysisCard = ({ onResults, onMetascraperResults, onVirusTotalResults }: DomainAnalysisCardProps) => {
   const [domain, setDomain] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
@@ -365,6 +366,107 @@ const DomainAnalysisCard = ({ onResults, onMetascraperResults }: DomainAnalysisC
         });
       }
       
+      // Fetch VirusTotal data
+      const vtApiKey = import.meta.env.VITE_VIRUSTOTAL_API_KEY;
+      if (vtApiKey) {
+        try {
+          const vtResponse = await fetch(`https://www.virustotal.com/api/v3/domains/${domain.trim()}`, {
+            headers: {
+              'x-apikey': vtApiKey
+            }
+          });
+          
+          if (vtResponse.ok) {
+            const vtData = await vtResponse.json();
+            const data = vtData.data?.attributes || {};
+            
+            // Extract comprehensive VirusTotal information
+            const virusTotalResult = {
+              id: Date.now() + 2,
+              domain: domain.trim(),
+              timestamp: new Date().toLocaleString(),
+              
+              // Security & Reputation
+              reputation: data.reputation || 0,
+              last_analysis_stats: data.last_analysis_stats || {},
+              total_votes: data.total_votes || {},
+              
+              // Categories
+              categories: data.categories || {},
+              
+              // Popularity
+              popularity_ranks: data.popularity_ranks || {},
+              
+              // WHOIS data from VT
+              whois: data.whois || null,
+              whois_date: data.whois_date ? new Date(data.whois_date * 1000).toLocaleString() : null,
+              
+              // Creation & Last Update
+              creation_date: data.creation_date ? new Date(data.creation_date * 1000).toLocaleString() : null,
+              last_update_date: data.last_update_date ? new Date(data.last_update_date * 1000).toLocaleString() : null,
+              last_modification_date: data.last_modification_date ? new Date(data.last_modification_date * 1000).toLocaleString() : null,
+              last_analysis_date: data.last_analysis_date ? new Date(data.last_analysis_date * 1000).toLocaleString() : null,
+              
+              // DNS Records
+              last_dns_records: data.last_dns_records || [],
+              last_dns_records_date: data.last_dns_records_date ? new Date(data.last_dns_records_date * 1000).toLocaleString() : null,
+              
+              // SSL Certificate
+              last_https_certificate: data.last_https_certificate || null,
+              last_https_certificate_date: data.last_https_certificate_date ? new Date(data.last_https_certificate_date * 1000).toLocaleString() : null,
+              
+              // Tags & Threat Names
+              tags: data.tags || [],
+              
+              // Registrar
+              registrar: data.registrar || null,
+              
+              // Jarm fingerprint
+              jarm: data.jarm || null,
+              
+              // Analysis results details
+              last_analysis_results: data.last_analysis_results || {},
+              
+              // Calculated scores
+              malicious_score: data.last_analysis_stats?.malicious || 0,
+              suspicious_score: data.last_analysis_stats?.suspicious || 0,
+              harmless_score: data.last_analysis_stats?.harmless || 0,
+              undetected_score: data.last_analysis_stats?.undetected || 0,
+              
+              // Risk assessment
+              risk_level: (() => {
+                const malicious = data.last_analysis_stats?.malicious || 0;
+                const suspicious = data.last_analysis_stats?.suspicious || 0;
+                if (malicious > 5) return 'High';
+                if (malicious > 0 || suspicious > 3) return 'Medium';
+                if (suspicious > 0) return 'Low';
+                return 'Clean';
+              })()
+            };
+            
+            onVirusTotalResults(virusTotalResult);
+          } else {
+            throw new Error(`VirusTotal API responded with status ${vtResponse.status}`);
+          }
+        } catch (vtError: any) {
+          console.error('VirusTotal error:', vtError);
+          onVirusTotalResults({
+            id: Date.now() + 2,
+            domain: domain.trim(),
+            timestamp: new Date().toLocaleString(),
+            error: vtError.message || 'Failed to fetch VirusTotal data. Check API key or rate limit.'
+          });
+        }
+      } else {
+        // No API key provided
+        onVirusTotalResults({
+          id: Date.now() + 2,
+          domain: domain.trim(),
+          timestamp: new Date().toLocaleString(),
+          error: 'VirusTotal API key not configured. Add VITE_VIRUSTOTAL_API_KEY to .env file.'
+        });
+      }
+      
       setIsScanning(false);
       setDomain("");
 
@@ -432,6 +534,8 @@ const DomainAnalysisCard = ({ onResults, onMetascraperResults }: DomainAnalysisC
             <li className="hover:text-red-600 dark:hover:text-blue-400 transition-colors duration-300">• IP geolocation & ASN</li>
             <li className="hover:text-blue-600 dark:hover:text-red-400 transition-colors duration-300">• Security reputation check</li>
             <li className="hover:text-red-600 dark:hover:text-blue-400 transition-colors duration-300">• VPN/Proxy detection</li>
+            <li className="hover:text-blue-600 dark:hover:text-red-400 transition-colors duration-300">• VirusTotal security analysis</li>
+            <li className="hover:text-red-600 dark:hover:text-blue-400 transition-colors duration-300">• Webpage metadata extraction</li>
           </ul>
         </div>
       </CardContent>

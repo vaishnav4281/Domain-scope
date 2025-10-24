@@ -105,8 +105,8 @@ const ResultsPanel = ({ results }: ResultsPanelProps) => {
   };
 
   return (
-    <Card className="h-fit border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg">
-      <CardHeader className="bg-gradient-to-r from-red-600/10 to-blue-600/10 border-b border-red-200/50 dark:border-blue-800/50 p-4 sm:p-6">
+  <Card className="h-fit border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg max-h-[350px] sm:max-h-[400px] overflow-y-auto">
+  <CardHeader className="bg-gradient-to-r from-red-600/10 to-blue-600/10 border-b border-red-200/50 dark:border-blue-800/50 p-2 sm:p-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
           <CardTitle className="flex items-center space-x-2">
             <div className="p-2 bg-gradient-to-r from-red-600 to-blue-600 rounded-lg">
@@ -130,7 +130,7 @@ const ResultsPanel = ({ results }: ResultsPanelProps) => {
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6">
+  <CardContent className="p-2 sm:p-3">
         {results.length === 0 ? (
           <div className="text-center py-8 sm:py-12 text-slate-500 dark:text-slate-400">
             <div className="bg-gradient-to-r from-red-100 to-blue-100 dark:from-red-950/50 dark:to-blue-950/50 rounded-full w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 flex items-center justify-center">

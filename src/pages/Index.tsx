@@ -4,17 +4,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Search, Database, FileText, Globe, Activity, Moon, Sun } from "lucide-react";
+import { Shield, Search, Database, FileText, Globe, Activity, Moon, Sun, CheckCircle, XCircle } from "lucide-react";
 import DomainAnalysisCard from "@/components/DomainAnalysisCard";
 import BulkScannerCard from "@/components/BulkScannerCard";
 import ResultsPanel from "@/components/ResultsPanel";
 import MetascraperResults from "@/components/MetascraperResults";
+import VirusTotalResults from "@/components/VirusTotalResults";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
   const [results, setResults] = useState([]);
   const [metascraperResults, setMetascraperResults] = useState([]);
+  const [virusTotalResults, setVirusTotalResults] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [apiStatus, setApiStatus] = useState({ backend: null, virustotal: null });
+  // API status check
+  useEffect(() => {
+    const checkApis = async () => {
+      // Backend check
+      let backendUp = false;
+      try {
+        const backendUrl = import.meta.env.VITE_API_BASE || "https://whois-aoi.onrender.com";
+        const res = await fetch(backendUrl + "/health", { method: "GET" });
+        backendUp = res.ok;
+      } catch {
+        backendUp = false;
+      }
+      // VirusTotal check
+      let vtUp = false;
+      try {
+        const vtKey = import.meta.env.VITE_VIRUSTOTAL_API_KEY;
+        const vtRes = await fetch("https://www.virustotal.com/api/v3/domains/google.com", {
+          headers: { "x-apikey": vtKey },
+        });
+        vtUp = vtRes.ok;
+      } catch {
+        vtUp = false;
+      }
+      setApiStatus({ backend: backendUp, virustotal: vtUp });
+    };
+    checkApis();
+    const interval = setInterval(checkApis, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Check for saved theme preference or default to light mode
@@ -47,6 +79,10 @@ const Index = () => {
     setMetascraperResults(prev => [newResult, ...prev]);
   };
 
+  const handleVirusTotalResults = (newResult: any) => {
+    setVirusTotalResults(prev => [newResult, ...prev]);
+  };
+
   const handleBulkResults = (newResult: any) => {
     setResults(prev => [newResult, ...prev]);
   };
@@ -71,6 +107,39 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* API Status Indicator */}
+              <div className="flex items-center space-x-2 mr-2">
+                <span className="flex items-center space-x-1">
+                  <span className="relative group">
+                    {apiStatus.backend === true ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : apiStatus.backend === false ? (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <Activity className="h-4 w-4 text-yellow-500 animate-spin" />
+                    )}
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 rounded bg-slate-800 text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none z-10 whitespace-nowrap">
+                      {apiStatus.backend === true ? "Backend API Up" : apiStatus.backend === false ? "Backend API Down" : "Checking Backend API"}
+                    </span>
+                  </span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">Backend</span>
+                </span>
+                <span className="flex items-center space-x-1">
+                  <span className="relative group">
+                    {apiStatus.virustotal === true ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : apiStatus.virustotal === false ? (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <Activity className="h-4 w-4 text-yellow-500 animate-spin" />
+                    )}
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 rounded bg-slate-800 text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none z-10 whitespace-nowrap">
+                      {apiStatus.virustotal === true ? "VirusTotal API Up" : apiStatus.virustotal === false ? "VirusTotal API Down" : "Checking VirusTotal API"}
+                    </span>
+                  </span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">VirusTotal</span>
+                </span>
+              </div>
               <Button
                 onClick={toggleDarkMode}
                 variant="outline"
@@ -149,7 +218,11 @@ const Index = () => {
           {/* Scanner Panel */}
           <div className="xl:col-span-1 animate-slide-in-right">
             {activeTab === 'single' ? (
-              <DomainAnalysisCard onResults={handleSingleResults} onMetascraperResults={handleMetascraperResults} />
+              <DomainAnalysisCard 
+                onResults={handleSingleResults} 
+                onMetascraperResults={handleMetascraperResults}
+                onVirusTotalResults={handleVirusTotalResults}
+              />
             ) : (
               <BulkScannerCard onResults={handleBulkResults} />
             )}
@@ -162,6 +235,9 @@ const Index = () => {
             
             {/* Metascraper Results */}
             <MetascraperResults results={metascraperResults} />
+            
+            {/* VirusTotal Results */}
+            <VirusTotalResults results={virusTotalResults} />
           </div>
         </div>
       </main>

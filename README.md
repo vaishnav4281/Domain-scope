@@ -43,7 +43,16 @@
 - 📬 **DNS Record Scanner**
   - A, MX, AAAA, NS records
 - 🕓 **Domain Age Calculator**
-- 🚀 Modular REST API endpoints
+- � **Metascraper Integration**
+  - 30+ metadata fields extraction
+  - Open Graph, Twitter Cards, JSON-LD
+  - SEO analysis and completeness scoring
+- 🛡️ **VirusTotal Security Analysis**
+  - 70+ antivirus vendor detections
+  - Domain reputation scoring
+  - DNS & SSL certificate analysis
+  - Threat categorization
+- �🚀 Modular REST API endpoints
 
 ---
 
@@ -53,7 +62,8 @@
 |------------|------------------------------------|
 | Frontend   | React + Vite + Tailwind CSS        |
 | Backend    | FastAPI + Gunicorn                 |
-| APIs Used  | IP2Location, AbuseIPDB, WhoisXML   |
+| APIs Used  | IP2Location, AbuseIPDB, WhoisXML, VirusTotal |
+| Metadata   | Metascraper (30+ fields)           |
 | Deployment | Vercel (UI), Render (API)          |
 
 ---
@@ -84,21 +94,26 @@ uvicorn app.main:app --reload
 
 ```bash
 cd frontend
-cp .env.example .env  # set VITE_API_BASE
+cp .env.example .env  # set VITE_API_BASE and VITE_VIRUSTOTAL_API_KEY
 npm install
 npm run dev
 ```
+
+**Get your VirusTotal API key**: https://www.virustotal.com/gui/my-apikey
+See [VIRUSTOTAL_INTEGRATION.md](VIRUSTOTAL_INTEGRATION.md) for detailed setup instructions.
 
 ---
 
 ## 📦 API Routes
 
-| Route             | Purpose                   |
-| ----------------- | ------------------------- |
-| `/whois/?domain=` | WHOIS info for domain     |
-| `/ipgeo/?ip=`     | IP2Location geolocation   |
-| `/abuse/?ip=`     | AbuseIPDB risk assessment |
-| `/dns/?domain=`   | A, MX, NS, AAAA records   |
+| Route             | Purpose                           |
+| ----------------- | --------------------------------- |
+| `/whois/?domain=` | WHOIS info for domain             |
+| `/ipgeo/?ip=`     | IP2Location geolocation           |
+| `/abuse/?ip=`     | AbuseIPDB risk assessment         |
+| `/dns/?domain=`   | A, MX, NS, AAAA records           |
+| VirusTotal API    | Domain security & reputation (v3) |
+| Metascraper       | Client-side metadata extraction   |
 
 ---
 
@@ -138,6 +153,9 @@ Domain-scope/
 * ✈️ Export results (JSON/CSV)
 * 🧩 Plugin support (via API keys)
 * 🧠 Threat scoring & classification
+* 📊 Historical domain reputation tracking
+* 🔗 Bulk VirusTotal scanning with rate limiting
+* 🎨 Custom risk assessment rules
 
 ---
 
