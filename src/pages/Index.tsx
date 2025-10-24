@@ -8,10 +8,12 @@ import { Shield, Search, Database, FileText, Globe, Activity, Moon, Sun } from "
 import DomainAnalysisCard from "@/components/DomainAnalysisCard";
 import BulkScannerCard from "@/components/BulkScannerCard";
 import ResultsPanel from "@/components/ResultsPanel";
+import MetascraperResults from "@/components/MetascraperResults";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
   const [results, setResults] = useState([]);
+  const [metascraperResults, setMetascraperResults] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -39,6 +41,10 @@ const Index = () => {
   // Create callback functions that properly handle state updates
   const handleSingleResults = (newResult: any) => {
     setResults(prev => [newResult, ...prev]);
+  };
+
+  const handleMetascraperResults = (newResult: any) => {
+    setMetascraperResults(prev => [newResult, ...prev]);
   };
 
   const handleBulkResults = (newResult: any) => {
@@ -78,7 +84,7 @@ const Index = () => {
                 )}
               </Button>
               <div className="hidden sm:block text-sm text-slate-600 dark:text-slate-400">
-                Built by <span className="font-semibold bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Vaishnav K</span>
+                Built by <span className="font-semibold bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Vaishnav K & Sidharth M</span>
               </div>
             </div>
           </div>
@@ -143,15 +149,19 @@ const Index = () => {
           {/* Scanner Panel */}
           <div className="xl:col-span-1 animate-slide-in-right">
             {activeTab === 'single' ? (
-              <DomainAnalysisCard onResults={handleSingleResults} />
+              <DomainAnalysisCard onResults={handleSingleResults} onMetascraperResults={handleMetascraperResults} />
             ) : (
               <BulkScannerCard onResults={handleBulkResults} />
             )}
           </div>
 
           {/* Results Panel */}
-          <div className="xl:col-span-2 animate-slide-in-right" style={{ animationDelay: '200ms' }}>
+          <div className="xl:col-span-2 space-y-4 sm:space-y-6 animate-slide-in-right" style={{ animationDelay: '200ms' }}>
+            {/* Backend Results */}
             <ResultsPanel results={results} />
+            
+            {/* Metascraper Results */}
+            <MetascraperResults results={metascraperResults} />
           </div>
         </div>
       </main>
